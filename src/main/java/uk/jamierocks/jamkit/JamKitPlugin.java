@@ -21,48 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package uk.jamierocks.jamkit.plugin;
+package uk.jamierocks.jamkit;
 
-import com.minnymin.command.CommandFramework;
-import org.bukkit.plugin.java.JavaPlugin;
-import uk.jamierocks.jamkit.locale.Language;
+import org.mcstats.MetricsLite;
+import uk.jamierocks.jamkit.plugin.Plugin;
+
+import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * Created by jamie on 18/03/15.
  */
-public abstract class Plugin extends JavaPlugin {
+class JamKitPlugin extends Plugin {
 
-    private CommandFramework commandFramework = new CommandFramework(this);
-
-    private Language language = new Language(this);
-
-    /**
-     * Registers a collection of commands
-     *
-     * @see CommandFramework#registerCommands(Object)
-     */
-    protected void registerCommands(Object obj) {
-        commandFramework.registerCommands(obj);
+    @Override
+    public void onEnable() {
+        try {
+            MetricsLite metrics = new MetricsLite(this);
+            metrics.start();
+        } catch (IOException ex) {
+            getLogger().log(Level.WARNING, "Oh noes... Something broke.", ex);
+        }
     }
 
-    protected CommandFramework getCommandFramework() {
-        return commandFramework;
+    @Override
+    public void onDisable() {
+
     }
-
-    /**
-     * Localizes a String
-     *
-     * @see Language#localize(String)
-     */
-    public String localize(String tag) {
-        return language.localize(tag);
-    }
-
-    public Language getLanguage() {
-        return language;
-    }
-
-    public abstract void onEnable();
-
-    public abstract void onDisable();
 }

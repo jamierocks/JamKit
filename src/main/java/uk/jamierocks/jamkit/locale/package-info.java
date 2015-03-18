@@ -21,48 +21,4 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package uk.jamierocks.jamkit.plugin;
-
-import com.minnymin.command.CommandFramework;
-import org.bukkit.plugin.java.JavaPlugin;
-import uk.jamierocks.jamkit.locale.Language;
-
-/**
- * Created by jamie on 18/03/15.
- */
-public abstract class Plugin extends JavaPlugin {
-
-    private CommandFramework commandFramework = new CommandFramework(this);
-
-    private Language language = new Language(this);
-
-    /**
-     * Registers a collection of commands
-     *
-     * @see CommandFramework#registerCommands(Object)
-     */
-    protected void registerCommands(Object obj) {
-        commandFramework.registerCommands(obj);
-    }
-
-    protected CommandFramework getCommandFramework() {
-        return commandFramework;
-    }
-
-    /**
-     * Localizes a String
-     *
-     * @see Language#localize(String)
-     */
-    public String localize(String tag) {
-        return language.localize(tag);
-    }
-
-    public Language getLanguage() {
-        return language;
-    }
-
-    public abstract void onEnable();
-
-    public abstract void onDisable();
-}
+package uk.jamierocks.jamkit.locale;
