@@ -48,10 +48,6 @@
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
         <repository>
-            <id>Plugin Metrics</id>
-            <url>http://repo.mcstats.org/content/repositories/public</url>
-        </repository>
-        <repository>
             <id>lex-repo</id>
             <url>http://repo.jamierocks.uk/</url>
         </repository>
@@ -71,9 +67,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.mcstats.bukkit</groupId>
-            <artifactId>metrics-lite</artifactId>
-            <version>R7</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.3.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -98,14 +94,14 @@
                 <configuration>
                     <artifactSet>
                         <includes>
-                            <include>org.mcstats.*:*</include>
+                            <include>com.google.code.gson.*:*</include>
                             <include>com.minnymin.*:*</include>
                         </includes>
                     </artifactSet>
                     <relocations>
                         <relocation>
-                            <pattern>org.mcstats</pattern>
-                            <shadedPattern>${project.groupId}.${project.artifactId}.mcstats</shadedPattern>
+                            <pattern>com.google.gson</pattern>
+                            <shadedPattern>${project.groupId}.${project.artifactId}.gson</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.minnymin.command</pattern>

@@ -23,8 +23,8 @@
  */
 package uk.jamierocks.jamkit;
 
-import org.mcstats.MetricsLite;
 import uk.jamierocks.jamkit.plugin.Plugin;
+import uk.jamierocks.jamkit.stats.Metrics;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -37,7 +37,7 @@ class JamKitPlugin extends Plugin {
     @Override
     public void onEnable() {
         try {
-            MetricsLite metrics = new MetricsLite(this);
+            Metrics metrics = new Metrics(this);
             metrics.start();
         } catch (IOException ex) {
             getLogger().log(Level.WARNING, "Oh noes... Something broke.", ex);
