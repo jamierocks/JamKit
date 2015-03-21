@@ -51,13 +51,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 public class Metrics {
@@ -86,6 +86,11 @@ public class Metrics {
      * The plugin this metrics submits for
      */
     private final Plugin plugin;
+
+    /**
+     * The logger that metrics uses
+     */
+    private final Logger logger = Logger.getLogger("Metrics");
 
     /**
      * All of the custom graphs to submit to metrics
@@ -128,6 +133,7 @@ public class Metrics {
         }
 
         this.plugin = plugin;
+        this.logger.setParent(Bukkit.getLogger());
 
         // load the config
         configurationFile = getConfigFile();
@@ -233,7 +239,7 @@ public class Metrics {
                         firstPost = false;
                     } catch (IOException e) {
                         if (debug) {
-                            Bukkit.getLogger().log(Level.INFO, "[Metrics] " + e.getMessage());
+                            logger.log(Level.INFO, e.getMessage());
                         }
                     }
                 }
@@ -255,12 +261,12 @@ public class Metrics {
                 configuration.load(getConfigFile());
             } catch (IOException ex) {
                 if (debug) {
-                    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + ex.getMessage());
+                    logger.log(Level.INFO, ex.getMessage());
                 }
                 return true;
             } catch (InvalidConfigurationException ex) {
                 if (debug) {
-                    Bukkit.getLogger().log(Level.INFO, "[Metrics] " + ex.getMessage());
+                    logger.log(Level.INFO, ex.getMessage());
                 }
                 return true;
             }
@@ -406,9 +412,9 @@ public class Metrics {
         } else {
             connection = url.openConnection();
         }
-        
+
         String jsonString = new Gson().toJson(json);
-        
+
         byte[] uncompressed = jsonString.getBytes();
         byte[] compressed = gzip(jsonString);
 
@@ -423,7 +429,8 @@ public class Metrics {
         connection.setDoOutput(true);
 
         if (debug) {
-            System.out.println("[Metrics] Prepared request for " + pluginName + " uncompressed=" + uncompressed.length + " compressed=" + compressed.length);
+            logger.log(Level.INFO, String.format("Prepared request for %s uncompressed=%d compressed=%d", pluginName,
+                    uncompressed.length, compressed.length));
         }
 
         // Write the data
@@ -451,11 +458,7 @@ public class Metrics {
             // Is this the first update this hour?
             if (response.equals("1") || response.contains("This is your first update this hour")) {
                 synchronized (graphs) {
-                    final Iterator<Graph> iter = graphs.iterator();
-
-                    while (iter.hasNext()) {
-                        final Graph graph = iter.next();
-
+                    for (Graph graph : graphs) {
                         for (Plotter plotter : graph.getPlotters()) {
                             plotter.reset();
                         }
@@ -481,9 +484,11 @@ public class Metrics {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (gzos != null) try {
-                gzos.close();
-            } catch (IOException ignore) {
+            if (gzos != null) {
+                try {
+                    gzos.close();
+                } catch (IOException ignore) {
+                }
             }
         }
 
