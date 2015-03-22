@@ -29,6 +29,7 @@
 package uk.jamierocks.jamkit.stats;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -51,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,12 +83,12 @@ public class Metrics {
     private static final int PING_INTERVAL = 15;
 
     /**
-     * The plugin this metrics submits for
+     * The {@link Plugin} this metrics submits for
      */
     private final Plugin plugin;
 
     /**
-     * The logger that metrics uses
+     * The {@link Logger} that metrics uses
      */
     private final Logger logger = Logger.getLogger("Metrics");
 
@@ -98,12 +98,12 @@ public class Metrics {
     private final Set<Graph> graphs = Collections.synchronizedSet(new HashSet<Graph>());
 
     /**
-     * The plugin configuration file
+     * The {@link Plugin} configuration file
      */
     private final YamlConfiguration configuration;
 
     /**
-     * The plugin configuration file
+     * The {@link Plugin} configuration file
      */
     private final File configurationFile;
 
@@ -128,12 +128,10 @@ public class Metrics {
     private volatile BukkitTask task = null;
 
     public Metrics(final Plugin plugin) throws IOException {
-        if (plugin == null) {
-            throw new IllegalArgumentException("Plugin cannot be null");
-        }
+        Validate.notNull(plugin, "Plugin cannot be null");
 
         this.plugin = plugin;
-        this.logger.setParent(Bukkit.getLogger());
+        this.logger.setParent(plugin.getLogger());
 
         // load the config
         configurationFile = getConfigFile();
@@ -156,16 +154,16 @@ public class Metrics {
     }
 
     /**
-     * Construct and create a Graph that can be used to separate specific plotters to their own graphs on the metrics
-     * website. Plotters can be added to the graph object returned.
+     * Construct and create a {@link Graph} that can be used to separate specific plotters to their own graphs on the
+     * * metrics
+     * website. Plotters can be added to the {@link Graph} object returned.
      *
      * @param name The name of the graph
-     * @return Graph object created. Will never return NULL under normal circumstances unless bad parameters are given
+     * @return {@link Graph} object created. Will never return NULL under normal circumstances unless bad parameters are
+     * * given
      */
     public Graph createGraph(final String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Graph name cannot be null");
-        }
+        Validate.notNull(name, "Graph name cannot be null");
 
         // Construct the graph object
         final Graph graph = new Graph(name);
@@ -178,14 +176,13 @@ public class Metrics {
     }
 
     /**
-     * Add a Graph object to BukkitMetrics that represents data for the plugin that should be sent to the backend
+     * Add a {@link Graph} object to BukkitMetrics that represents data for the plugin that should be sent to the 
+     * * backend
      *
-     * @param graph The name of the graph
+     * @param graph The name of the {@link Graph}
      */
     public void addGraph(final Graph graph) {
-        if (graph == null) {
-            throw new IllegalArgumentException("Graph cannot be null");
-        }
+        Validate.notNull(graph, "Graph cannot be null");
 
         graphs.add(graph);
     }
@@ -341,10 +338,10 @@ public class Metrics {
         // Server software specific section
         PluginDescriptionFile description = plugin.getDescription();
         String pluginName = description.getName();
-        boolean onlineMode = Bukkit.getServer().getOnlineMode(); // TRUE if online mode is enabled
+        boolean onlineMode = plugin.getServer().getOnlineMode(); // TRUE if online mode is enabled
         String pluginVersion = description.getVersion();
         String serverVersion = Bukkit.getVersion();
-        int playersOnline = Bukkit.getServer().getOnlinePlayers().length;
+        int playersOnline = plugin.getServer().getOnlinePlayers().length;
 
         // END server software specific section -- all code below does not use any code outside of this class / Java
 
@@ -517,149 +514,5 @@ public class Metrics {
      */
     private static String urlEncode(final String text) throws UnsupportedEncodingException {
         return URLEncoder.encode(text, "UTF-8");
-    }
-
-    /**
-     * Represents a custom graph on the website
-     */
-    public static class Graph {
-
-        /**
-         * The graph's name, alphanumeric and spaces only :) If it does not comply to the above when submitted, it is
-         * rejected
-         */
-        private final String name;
-
-        /**
-         * The set of plotters that are contained within this graph
-         */
-        private final Set<Plotter> plotters = new LinkedHashSet<Plotter>();
-
-        private Graph(final String name) {
-            this.name = name;
-        }
-
-        /**
-         * Gets the graph's name
-         *
-         * @return the Graph's name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Add a plotter to the graph, which will be used to plot entries
-         *
-         * @param plotter the plotter to add to the graph
-         */
-        public void addPlotter(final Plotter plotter) {
-            plotters.add(plotter);
-        }
-
-        /**
-         * Remove a plotter from the graph
-         *
-         * @param plotter the plotter to remove from the graph
-         */
-        public void removePlotter(final Plotter plotter) {
-            plotters.remove(plotter);
-        }
-
-        /**
-         * Gets an <b>unmodifiable</b> set of the plotter objects in the graph
-         *
-         * @return an unmodifiable {@link java.util.Set} of the plotter objects
-         */
-        public Set<Plotter> getPlotters() {
-            return Collections.unmodifiableSet(plotters);
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object object) {
-            if (!(object instanceof Graph)) {
-                return false;
-            }
-
-            final Graph graph = (Graph) object;
-            return graph.name.equals(name);
-        }
-
-        /**
-         * Called when the server owner decides to opt-out of BukkitMetrics while the server is running.
-         */
-        protected void onOptOut() {
-        }
-    }
-
-    /**
-     * Interface used to collect custom data for a plugin
-     */
-    public static abstract class Plotter {
-
-        /**
-         * The plot's name
-         */
-        private final String name;
-
-        /**
-         * Construct a plotter with the default plot name
-         */
-        public Plotter() {
-            this("Default");
-        }
-
-        /**
-         * Construct a plotter with a specific plot name
-         *
-         * @param name the name of the plotter to use, which will show up on the website
-         */
-        public Plotter(final String name) {
-            this.name = name;
-        }
-
-        /**
-         * Get the current value for the plotted point. Since this function defers to an external function it may or may
-         * not return immediately thus cannot be guaranteed to be thread friendly or safe. This function can be called
-         * from any thread so care should be taken when accessing resources that need to be synchronized.
-         *
-         * @return the current value for the point to be plotted.
-         */
-        public abstract int getValue();
-
-        /**
-         * Get the column name for the plotted point
-         *
-         * @return the plotted point's column name
-         */
-        public String getColumnName() {
-            return name;
-        }
-
-        /**
-         * Called after the website graphs have been updated
-         */
-        public void reset() {
-        }
-
-        @Override
-        public int hashCode() {
-            return getColumnName().hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object object) {
-            if (!(object instanceof Plotter)) {
-                return false;
-            }
-
-            final Plotter plotter = (Plotter) object;
-            return plotter.name.equals(name) && plotter.getValue() == getValue();
-        }
     }
 }
