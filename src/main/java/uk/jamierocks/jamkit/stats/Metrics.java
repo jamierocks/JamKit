@@ -127,7 +127,7 @@ public class Metrics {
      */
     private volatile BukkitTask task = null;
 
-    public Metrics(final Plugin plugin) throws IOException {
+    public Metrics(final Plugin plugin) {
         Validate.notNull(plugin, "Plugin cannot be null");
 
         this.plugin = plugin;
@@ -143,9 +143,13 @@ public class Metrics {
         configuration.addDefault("debug", false);
 
         // Do we need to create the file?
-        if (configuration.get("guid", null) == null) {
+        if ((configuration.get("guid") == null) || configuration.getString("guid").equals("")) {
             configuration.options().header("http://mcstats.org").copyDefaults(true);
-            configuration.save(configurationFile);
+            try {
+                configuration.save(configurationFile);
+            } catch (IOException ex) {
+                logger.log(Level.WARNING, "Oh noes... Something broke.", ex);
+            }
         }
 
         // Load the guid then

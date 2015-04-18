@@ -24,24 +24,30 @@
 package uk.jamierocks.jamkit;
 
 import uk.jamierocks.jamkit.plugin.Plugin;
-import uk.jamierocks.jamkit.stats.Metrics;
-
-import java.io.IOException;
-import java.util.logging.Level;
+import uk.jamierocks.jamkit.stats.Graph;
+import uk.jamierocks.jamkit.stats.Plotter;
 
 /**
  * Created by jamie on 18/03/15.
  */
-class JamKitPlugin extends Plugin {
+public class JamKitPlugin extends Plugin {
 
     @Override
     public void onEnable() {
-        try {
-            Metrics metrics = new Metrics(this);
-            metrics.start();
-        } catch (IOException ex) {
-            getLogger().log(Level.WARNING, "Oh noes... Something broke.", ex);
+        Graph plugins = getMetrics().createGraph("Plugins using JamKit");
+
+        for (org.bukkit.plugin.Plugin plugin : getServer().getPluginManager().getPlugins()) {
+            if(plugin instanceof Plugin) {
+                plugins.addPlotter(new Plotter(plugin.getName()) {
+                    @Override
+                    public int getValue() {
+                        return 1;
+                    }
+                });
+            }
         }
+
+        getMetrics().start();
     }
 
     @Override

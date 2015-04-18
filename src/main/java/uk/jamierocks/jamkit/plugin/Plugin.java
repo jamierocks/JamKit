@@ -26,6 +26,7 @@ package uk.jamierocks.jamkit.plugin;
 import com.minnymin.command.CommandFramework;
 import org.bukkit.plugin.java.JavaPlugin;
 import uk.jamierocks.jamkit.locale.Language;
+import uk.jamierocks.jamkit.stats.Metrics;
 
 /**
  * Created by jamie on 18/03/15.
@@ -35,6 +36,8 @@ public abstract class Plugin extends JavaPlugin {
     private CommandFramework commandFramework = new CommandFramework(this);
 
     private Language language = new Language(this);
+
+    private Metrics metrics = new Metrics(this);
 
     /**
      * Registers a collection of commands
@@ -60,6 +63,10 @@ public abstract class Plugin extends JavaPlugin {
 
     public Language getLanguage() {
         return language;
+    }
+
+    protected Metrics getMetrics() {
+        return metrics;
     }
 
     public abstract void onEnable();
